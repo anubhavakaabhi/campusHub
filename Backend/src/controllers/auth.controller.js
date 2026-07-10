@@ -20,17 +20,28 @@ async function registerUser(req,res){
     }
 
     const hash = await bcrypt.hash(password, 10);
-
-    const user = await userModel.create({name: name, email: email, password: hash, branch: branch, year: year, profileImage: profileImage});
+       const user = await userModel.create({
+        name: name, 
+        email: email, 
+        password: hash, 
+        branch: branch, 
+        year: year, 
+        profileImage: profileImage, 
+    });
 
     const accessToken = jwt.sign({_id:user._id},process.env.ACCESS_TOKEN_SECRET,{expiresIn:"15m"});
     const refreshToken = jwt.sign({_id:user._id},process.env.REFRESH_TOKEN_SECRET,{expiresIn:"7d"});
 
+    await userModel.findByIdAndUpdate(user._id , {refreshToken:refreshToken});
+ 
+
+
     res.cookie("refreshToken",refreshToken,{
         httpOnly:true,
         secure:true,
-        sameSite:"strict",
-        maxAge:1000 * 60 * 60 * 24 * 7,
+    }).cookie("accessToken" , accessToken,{
+        httpOnly:true,
+        secure:true,
     })
 
     return res.status(200).json({
@@ -42,6 +53,46 @@ async function registerUser(req,res){
 
 async function loginUser(req,res){
     const {email , password} = req.body;
+    const user = await userModel.findOne({email});
+    if(user){
+        const isMatch = await bcrypt.compare(password, user.password);
+        if(isMatch){
+            const accessToken = jwt.sign({_id:user._id},process.env.ACCESS_TOKEN_SECRET,{expiresIn:"15m"});
+            const refreshToken = jwt.sign({_id:user._id},process.env.REFRESH_TOKEN_SECRET,{expiresIn:"7d"});
+            await userModel.findByIdAndUpdate(user._id , {refreshToken:refreshToken});
+            res.cookie("refreshToken",refreshToken,{
+                httpOnly:true,
+                secure:true,
+            }).cookie("accessToken" , accessToken,{
+                httpOnly:true,
+                secure:true,
+            })
+            return res.status(200).json({
+                message:"User logged in successfully",
+                user,
+                accessToken,
+            });
+        }
+    }
+    return res.status(400).json({
+        message:"Invalid credentials",
+    });
 }
 
-export {registerUser};
+async function logoutUser(req,res){
+   const accessToken = req.cookies.accessToken;
+   const refreshToken = req.cookies.refreshToken;
+   if(!accessToken || !refreshToken){
+       return res.status(400).json({
+           message:"No token found",
+       });
+   }
+   const decodedRefreshToken = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET);
+   await userModel.findByIdAndUpdate(decodedRefreshToken._id , {refreshToken:null});
+   res.clearCookie("refreshToken").clearCookie("accessToken");
+   return res.status(200).json({
+       message:"User logged out successfully",
+   });
+}
+
+export {registerUser, loginUser , logoutUser};
