@@ -5,6 +5,7 @@ import './index.css'
 import Home from './components/Home.jsx';
 import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
+import PdfLayout from './components/PdfLayout.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -12,6 +13,7 @@ const router = createBrowserRouter(
     <Route path='' element={<Home/>}/>
     <Route path='login' element={<Login/>}/>
     <Route path='register' element={<Register/>}/>
+    <Route path='pdf/:id' element={<PdfLayout/>}/>
     </Route>
   )
 )
