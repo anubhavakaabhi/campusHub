@@ -5,7 +5,7 @@ async function generateNotes(req, res){
     const notes = await main(id);
     return res.status(200).json({
         message:"Notes generated successfully",
-        notes,
+        data:notes,
     });
 }
 

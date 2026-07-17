@@ -70,7 +70,7 @@ function Layout() {
         </div>
       </header>
       {/* Page content */}
-      <main className="max-w-5xl mx-auto px-6 py-10">
+      <main className="px-6 py-10">
         <Outlet />
       </main>
       <Footer />
