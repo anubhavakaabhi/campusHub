@@ -4,19 +4,19 @@ import pdfToText from "./pdfToText.js";
 dotenv.config();
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-const text = await pdfToText();
 
-export async function main() {
-    const chatCompletion = await getGroqChatCompletion();
-    console.log(chatCompletion.choices[0]?.message?.content || "");
+export async function main(id) {
+    const text = await pdfToText(id);
+    const chatCompletion = await getGroqChatCompletion(text);
+    return chatCompletion.choices[0]?.message?.content || "";
 }
 
-export async function getGroqChatCompletion() {
+async function getGroqChatCompletion(text) {
     return groq.chat.completions.create({
         messages: [
             {
                 role: "user",
-                content: `Explain the pdf with text ${text}`,
+                content: `Summarise the content of the pdf in a note format with clear headings and bullet points, ignoring any pages with mostly images or graphs. The pdf text is: ${text}`,
             },
         ],
         model: "openai/gpt-oss-20b",

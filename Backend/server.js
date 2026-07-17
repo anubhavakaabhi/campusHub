@@ -1,12 +1,9 @@
 import app from "./src/app.js";
 import dotenv from "dotenv";
 import connectDB from "./src/config/db.js";
-import { main } from "./src/config/ai.js";
-
 dotenv.config();
 
 connectDB();
-main();
 
 
 

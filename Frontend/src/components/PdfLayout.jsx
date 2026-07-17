@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { Document, Page } from 'react-pdf';
 import { pdfjs } from 'react-pdf';
 import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
-import pdf from '../assets/0410100v1.pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { useParams } from 'react-router-dom';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-
 function PdfLayout() {
+  const {id} = useParams();
+  const pdf = `/pdfs/${id}.pdf`;
+
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
 

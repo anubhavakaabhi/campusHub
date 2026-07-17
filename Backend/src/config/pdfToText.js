@@ -1,10 +1,9 @@
 import { PDFParse } from "pdf-parse";
 import fs from 'fs';
 
-const file = fs.readFileSync("./src/assets/0410100v1.pdf");
 
-
-export default async function pdfToText() {
+export default async function pdfToText(id) {
+  const file = fs.readFileSync(`./src/assets/${id}.pdf`);
     const parser = new PDFParse({data:file});
 
 	const result = await parser.getText();
