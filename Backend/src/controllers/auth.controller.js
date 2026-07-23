@@ -95,4 +95,64 @@ async function logoutUser(req,res){
    });
 }
 
-export {registerUser, loginUser , logoutUser};
+async function getCurrentUser(req,res){
+    const accessToken = req.cookies.accessToken;
+    if(!accessToken){
+        return res.status(401).json({
+            message:"Unauthorized",
+        });
+    }
+    const decodedToken = jwt.verify(accessToken,process.env.ACCESS_TOKEN_SECRET);
+    const {_id} = decodedToken;
+    const user = await userModel.findById(_id);
+    return res.status(200).json({
+        message:"User fetched successfully",
+        user,
+    });
+}
+
+async function refreshTokens(req,res){
+    let refreshToken = req.cookies.refreshToken;
+    if(!refreshToken){
+        return res.status(401).json({
+            message:"Unauthorized",
+        });
+    }
+    const decodedRefreshToken = jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET);
+    const {_id} = decodedRefreshToken;
+    const user = await userModel.findById(_id);
+    if(!user){
+        return res.status(404).json({
+            message:"User not found",
+        });
+    }
+    const accessToken = jwt.sign({_id:user._id},process.env.ACCESS_TOKEN_SECRET,{expiresIn:"15m"});
+    refreshToken = jwt.sign({_id:user._id},process.env.REFRESH_TOKEN_SECRET,{expiresIn:"7d"});
+    await userModel.findByIdAndUpdate(user._id , {refreshToken:refreshToken});
+    res.cookie("refreshToken",refreshToken,{
+        httpOnly:true,
+        secure:true,
+    }).cookie("accessToken" , accessToken,{
+        httpOnly:true,
+        secure:true,
+    })
+    return res.status(200).json({
+        message:"Tokens refreshed successfully",
+        user,
+        accessToken,
+    });
+}
+
+
+async function verifyRefreshtoken(req,res){
+    const refreshToken = req.cookies.refreshToken;
+    if(refreshToken){
+        return res.status(200).json({
+            message:"Token is valid",
+        });
+    }
+    return res.status(401).json({
+        message:"Token is invalid", 
+    });
+}
+export {registerUser, loginUser , logoutUser , getCurrentUser , refreshTokens};

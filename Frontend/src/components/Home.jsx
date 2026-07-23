@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home as HomeIcon, FileText, Users, BookOpen } from 'lucide-react';
+import cookie from 'react-cookie';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../services/auth.services.js';
 
 const tabs = [
   { key: 'home', label: 'Home', icon: HomeIcon },
-  { key: 'notes', label: 'Notes', icon: FileText },
-  { key: 'community', label: 'Community', icon: Users },
-  { key: 'pyqs', label: "PYQ's", icon: BookOpen },
 ];
 
 const tabContent = {
@@ -13,57 +13,21 @@ const tabContent = {
     title: 'Welcome back 👋',
     subtitle: 'Your campus, all in one place. Pick up where you left off.',
   },
-  notes: {
-    title: 'Notes Library',
-    subtitle: 'Access high quality, peer-shared study materials.',
-  },
-  community: {
-    title: 'Community',
-    subtitle: 'Ask doubts, share knowledge, and help others out.',
-  },
-  pyqs: {
-    title: "Previous Year Question Papers",
-    subtitle: 'Practice with real exam papers from past semesters.',
-  },
 };
 
 function Home() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('home');
   const active = tabContent[activeTab];
 
+ useEffect(() => {
+  api.get('/me')
+    .then((res) => console.log(res.data))
+    .catch(() => navigate('/login'));
+}, []);
+
   return (
     <div className="min-h-screen w-full bg-slate-100">
-      {/* Navbar */}
-      <header className="bg-slate-900">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-sm">
-              C
-            </div>
-            <div>
-              <p className="text-white font-semibold text-sm leading-tight">CampusHub</p>
-              <p className="text-[11px] text-slate-400 leading-tight">Bennett University</p>
-            </div>
-          </div>
-
-          <nav className="flex items-center gap-1">
-            {tabs.map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  activeTab === key
-                    ? 'bg-red-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`}
-              >
-                <Icon size={16} />
-                {label}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
 
       {/* Content */}
       <main className="max-w-5xl mx-auto px-6 py-10">
